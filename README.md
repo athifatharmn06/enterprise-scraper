@@ -15,8 +15,10 @@
 ### Categories Summary Endpoint
 ![Categories API](docs/screenshots/2_categories_api.png)
 
-### pgAdmin — Database View
-> Connect pgAdmin to `localhost:5432` with the credentials below to view tables visually.
+### pgAdmin — Database View (1,124 Products)
+![pgAdmin](docs/screenshots/5_pgadmin.png)
+
+> Shows `scraper_db` with all 4 tables (`alembic_version`, `price_history`, `products`, `retailers`) and the `products` table results — 1,124 total rows, query completed in 0.225s.
 
 **Tables in `scraper_db`:**
 | Table | Description |
