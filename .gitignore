@@ -1,0 +1,44 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Virtual environments
+venv/
+.venv/
+env/
+
+# Environment variables (keep .env.example if you add one)
+.env
+
+# Scrapy
+.scrapy/
+httpcache/
+
+# Alembic — keep versions tracked but skip pycache
+alembic/__pycache__/
+alembic/versions/__pycache__/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Docker volumes (not committed)
+postgres_data/
+redis_data/
+
+# Logs
+*.log

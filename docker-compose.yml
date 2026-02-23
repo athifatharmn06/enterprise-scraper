@@ -1,0 +1,81 @@
+version: '3.8'
+
+services:
+  # -------------------------------------
+  # 1. DATABASE LAYER
+  # -------------------------------------
+  postgres:
+    image: postgres:15-alpine
+    container_name: enterprise_scraper_db
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-scraper_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-scraper_pass}
+      POSTGRES_DB: ${POSTGRES_DB:-scraper_db}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-scraper_user} -d ${POSTGRES_DB:-scraper_db}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # -------------------------------------
+  # 2. MESSAGE BROKER LAYER
+  # -------------------------------------
+  redis:
+    image: redis:7-alpine
+    container_name: enterprise_scraper_redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # -------------------------------------
+  # 3. API LAYER
+  # -------------------------------------
+  api:
+    build: .
+    container_name: enterprise_scraper_api
+    ports:
+      - "8000:8000"
+    environment:
+      - POSTGRES_HOST=postgres
+      - POSTGRES_USER=${POSTGRES_USER:-scraper_user}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-scraper_pass}
+      - POSTGRES_DB=${POSTGRES_DB:-scraper_db}
+      - REDIS_URL=redis://redis:6379/0
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  # -------------------------------------
+  # 4. CELERY WORKER LAYER
+  # -------------------------------------
+  worker:
+    build: .
+    container_name: enterprise_scraper_worker
+    command: ["celery", "-A", "worker.celery_app", "worker", "--loglevel=info"]
+    environment:
+      - POSTGRES_HOST=postgres
+      - POSTGRES_USER=${POSTGRES_USER:-scraper_user}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-scraper_pass}
+      - POSTGRES_DB=${POSTGRES_DB:-scraper_db}
+      - REDIS_URL=redis://redis:6379/0
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
+  redis_data:
